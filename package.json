@@ -1,0 +1,25 @@
+{
+  "name": "distari-obsidian",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Pull Distari papers and notes into an Obsidian vault",
+  "license": "MIT",
+  "engines": { "node": ">=22.18.0" },
+  "scripts": {
+    "build": "tsc --noEmit && node esbuild.config.mjs",
+    "test": "node --experimental-strip-types --test src/*.test.ts",
+    "test:release": "node --test scripts/*.test.mjs",
+    "check": "npm run test && npm run build && npm run test:release",
+    "release:prepare": "npm run check && node scripts/prepare-release.mjs"
+  },
+  "dependencies": {
+    "@noble/hashes": "^2.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.17",
+    "esbuild": "^0.25.5",
+    "obsidian": "^1.13.1",
+    "typescript": "^5.8.3"
+  }
+}
