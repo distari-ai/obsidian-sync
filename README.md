@@ -4,7 +4,7 @@ This Obsidian plugin imports selected Distari projects as Markdown. Each paper g
 
 ## Availability and requirements
 
-As of 2026-10-10, version 0.1.1 is the current GitHub release in [`distari-ai/obsidian-sync`](https://github.com/distari-ai/obsidian-sync) for manual installation. It is not yet available from the community directory. Native desktop checks passed on Obsidian 1.13.7 and 1.14.4. The minimum app version is 1.13.0; mobile acceptance is still unverified.
+As of 2026-10-10, version 0.1.1 is the current release. Install it from Obsidian's community plugins ([directory listing](https://community.obsidian.md/plugins/distari-sync)), or manually from the GitHub releases in [`distari-ai/obsidian-sync`](https://github.com/distari-ai/obsidian-sync). Native desktop checks passed on Obsidian 1.13.7 and 1.14.4. The minimum app version is 1.13.0; mobile acceptance is still unverified.
 
 You need a Distari account, access to the projects you select, and an active personal token with `read` scope. The plugin is free. Distari offers paid plans and credits for its service; this plugin only reads existing papers, summaries and notes, so importing them does not spend credits. See [Distari pricing](https://distari.com/pricing/).
 
@@ -14,13 +14,13 @@ Download the individual `main.js` and `manifest.json` attachments from the exact
 
 Close Obsidian, create `<vault>/.obsidian/plugins/distari-sync/`, and copy only `manifest.json` and `main.js` into it. If your vault uses a custom configuration directory, substitute it for `.obsidian`. Reopen Obsidian, turn off Restricted mode if you want to use community plugins, and enable **Distari sync** under **Settings > Community plugins**. No stylesheet is required.
 
-After a reviewed directory listing exists and its installation path has been validated, you will be able to find **Distari sync** under **Settings > Community plugins > Browse**, then choose **Install** and **Enable**. These are future instructions, not a claim that the entry is available today.
+The simplest route is **Settings > Community plugins > Browse**: search for **Distari sync**, then choose **Install** and **Enable**. Obsidian appends a `/* nosourcemap */` comment to the `main.js` it installs, so to compare an installed file with the release checksum, hash it without its last 18 bytes.
 
 ## Updating and rollback
 
 Back up your vault before updating. Close Obsidian and retain copies of the old plugin assets and `.obsidian/plugins/distari-sync/data.json` if it exists. Replace only `main.js` and `manifest.json` with matching assets from the new release, then reopen Obsidian. Keep the `distari-sync` directory, `data.json`, Keychain entry and imported Markdown files. `data.json` holds settings and sync checkpoints, including the Keychain secret's name; removing it loses local-edit detection history.
 
-Verify your token selection, projects, folder and automatic-import interval, then run an unchanged import. Existing file paths and checkpoints should survive without new conflicts. Once listed, use Obsidian's community-plugin **Check for updates** and **Update** controls instead of replacing files manually, and make the same checks. There is no plugin-managed updater.
+Verify your token selection, projects, folder and automatic-import interval, then run an unchanged import. Existing file paths and checkpoints should survive without new conflicts. If you installed from the directory, use Obsidian's community-plugin **Check for updates** and **Update** controls instead of replacing files manually, and make the same checks. There is no plugin-managed updater.
 
 If an update fails, close Obsidian and restore the saved old assets. If the new version changed checkpoint data, restore the matching backed-up `data.json` as well. Preserve your vault's Markdown and local edits; do not uninstall to troubleshoot an update. Check [supported versions](VERSIONS.md) before reverting, especially after a security-required upgrade.
 
