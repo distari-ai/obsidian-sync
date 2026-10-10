@@ -4,7 +4,7 @@ This Obsidian plugin imports selected Distari projects as Markdown. Each paper g
 
 ## Availability and requirements
 
-As of 2026-10-10, version 0.1.0 is published as a GitHub release in [`distari-ai/obsidian-sync`](https://github.com/distari-ai/obsidian-sync) for manual installation. It is not yet available from the community directory. Native desktop checks passed on Obsidian 1.13.7. The minimum app version is 1.13.0; mobile acceptance is still unverified.
+As of 2026-10-10, version 0.1.1 is the current GitHub release in [`distari-ai/obsidian-sync`](https://github.com/distari-ai/obsidian-sync) for manual installation. It is not yet available from the community directory. Native desktop checks passed on Obsidian 1.13.7 and 1.14.4. The minimum app version is 1.13.0; mobile acceptance is still unverified.
 
 You need a Distari account, access to the projects you select, and an active personal token with `read` scope. The plugin is free. Distari offers paid plans and credits for its service; this plugin only reads existing papers, summaries and notes, so importing them does not spend credits. See [Distari pricing](https://distari.com/pricing/).
 
@@ -41,7 +41,7 @@ The API is paged for papers and notes. The plugin fetches current summaries on e
 
 ## Support and API stability
 
-Distari maintains this official plugin as a first-party Distari client, including any future community-directory release. It is independent of Obsidian's own plugins. Oshan owns releases and submission, with Sumedhe Dissanayake as backup maintainer. The [supported-version ledger](VERSIONS.md) records availability, retirement dates and required upgrades. Each official version remains supported while current and for at least 90 days after its successor becomes available, including overlapping windows. The current 0.1.0 manual build has no announced retirement date.
+Distari maintains this official plugin as a first-party Distari client, including any future community-directory release. It is independent of Obsidian's own plugins. Oshan owns releases and submission, with Sumedhe Dissanayake as backup maintainer. The [supported-version ledger](VERSIONS.md) records availability, retirement dates and required upgrades. Each official version remains supported while current and for at least 90 days after its successor becomes available, including overlapping windows. 0.1.0 is supported until at least 2027-01-08, 90 days after 0.1.1 became available; 0.1.1 has no announced retirement date.
 
 The plugin's `GET /api/v1/projects/{project_id}/notes` dependency is outside Distari's supported public API. A compatible plugin and upgrade instructions must precede a breaking backend change, with all supported predecessors' compatibility windows retained. Urgent security fixes may shorten a window with a documented reason and required upgrade. Other note routes and third-party clients do not gain a public compatibility promise from this plugin's access.
 

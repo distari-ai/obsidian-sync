@@ -8,7 +8,7 @@ Oshan owns release approval, publication and directory submission; Sumedhe Dissa
 
 The MIT license covers this plugin subtree and the exported plugin only. It does not license the rest of Distari. Oshan approved the license and the public source export on 2026-10-10, with Sumedhe informed; a change of license needs both owners. `THIRD_PARTY_LICENSES.md` carries the bundled SHA-256 dependency's license. Do not add a self-updater; Obsidian manages updates.
 
-As of 2026-10-10, 0.1.0 is the first public release in `distari-ai/obsidian-sync`. A push to the monorepo does not publish this plugin. There is deliberately no automatic publishing workflow.
+As of 2026-10-10, `distari-ai/obsidian-sync` has published 0.1.0 and its successor 0.1.1. A push to the monorepo does not publish this plugin. There is deliberately no automatic publishing workflow.
 
 The monorepo's `make release` and `make deploy` commands manage Distari service releases with `vMAJOR.MINOR.PATCH` tags. They do not publish Obsidian assets or change the plugin version. Publish this plugin separately in its distribution repository, using the exact manifest version without the `v` prefix.
 
@@ -50,7 +50,7 @@ The account, network, payment and file-access disclosures are in the README. Fol
 
 After license/export approval, create the public repository with a default branch containing the exported root files. Create a non-draft, non-prerelease GitHub release with the exact version tag and attach the two files individually. Generated GitHub source archives or a ZIP alone are insufficient. Verify anonymous access to the root manifest and both assets, and verify their checksums. Keep the previous release intact on every upgrade.
 
-Sign into the Community directory, link a maintainer's GitHub identity, select the team owner and prepare **New plugin**. Obtain approval immediately before granting OAuth, accepting policies or submitting. Record the directory entry URL and review results. Resolve errors with a new version and release; do not replace published bytes under an existing tag.
+Sign into the Community directory, link a maintainer's GitHub identity, select the team owner and prepare **New plugin**. The directory owns the entry through its organization Distari (`@distari`). It proves repository ownership through the linked account's public membership of the GitHub org, so that membership must be public (`gh api -X PUT orgs/distari-ai/public_members/<login>`), or submission fails with "You do not own this repository". Repeated attempts are rate-limited ("Please wait before trying again"). Obtain approval immediately before granting OAuth, accepting policies or submitting. Record the directory entry URL and review results. Resolve errors with a new version and release; do not replace published bytes under an existing tag.
 
 ## Installation and update acceptance gates
 

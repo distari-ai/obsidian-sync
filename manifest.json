@@ -1,7 +1,7 @@
 {
   "id": "distari-sync",
   "name": "Distari sync",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "minAppVersion": "1.13.0",
   "description": "Import your Distari papers, summaries, and notes into this vault.",
   "author": "Distari",

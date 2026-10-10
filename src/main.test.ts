@@ -42,8 +42,9 @@ function fixture(stored: object | null = null) {
   const notices: string[] = [];
   const commands: Array<{ id: string; name: string; callback: Callback }> = [];
   const ribbons: Array<{ icon: string; title: string; callback: Callback }> = [];
-  const tabs: Array<{ containerEl: Container; display(): void }> = [];
+  const tabs: Array<{ containerEl: Container; settingItems: Array<{ name: string }>; display(): void; hide(): void; update(): void }> = [];
   const settings: Array<{ name: string; container: Container; control?: Control }> = [];
+  const rows: string[] = [];
   const intervals = new Map<number, { callback: Callback; delay: number }>();
   const cleared: number[] = [];
   const saved: object[] = [];
@@ -80,9 +81,26 @@ function fixture(stored: object | null = null) {
     addCommand(command: typeof commands[number]) { commands.push(command); }
     addRibbonIcon(icon: string, title: string, callback: Callback) { ribbons.push({ icon, title, callback }); }
     registerEvent(value: unknown) { event = value; }
-    addSettingTab(tab: typeof tabs[number]) { tabs.push(tab); }
+    addSettingTab(tab: typeof tabs[number]) { tabs.push(tab); tab.update(); }
   }
-  class PluginSettingTab { app = app; containerEl = new Container(); }
+  // Mirrors Obsidian 1.13: update() stores the definitions (search indexing),
+  // display() renders them when the tab opens, and update() on an open tab re-renders.
+  type Definition = { name: string; searchable?: boolean; render?: (setting: Setting) => void };
+  class PluginSettingTab {
+    app = app;
+    containerEl = new Container();
+    settingItems: Definition[] = [];
+    open = false;
+    getSettingDefinitions(): Definition[] { return []; }
+    update() { this.settingItems = this.getSettingDefinitions(); if (this.open) this.render(); }
+    display() { this.open = true; this.render(); }
+    hide() { this.open = false; this.containerEl.empty(); }
+    render() {
+      this.containerEl.empty();
+      for (const item of this.settingItems) item.render?.(new Setting(this.containerEl).setName(item.name));
+      for (const item of this.settingItems) if (!item.render) rows.push(item.name);
+    }
+  }
   class Setting {
     entry: typeof settings[number];
     constructor(container: Container) { this.entry = { name: '', container }; settings.push(this.entry); }
@@ -123,7 +141,7 @@ function fixture(stored: object | null = null) {
   });
   const plugin = new module.exports.default();
   return {
-    plugin, commands, ribbons, tabs, settings, intervals, cleared, saved, notices, calls, contents, files,
+    plugin, commands, ribbons, tabs, settings, rows, intervals, cleared, saved, notices, calls, contents, files,
     get event() { return event; }, layoutReady: () => layoutReady(), fileMenu: (menu: unknown) => fileMenu(menu),
     setStatus(value: number) { status = value; }, setProjects(value: typeof projects) { projects = value; },
     setSecret(value: string) { secret = value; },
@@ -203,8 +221,7 @@ void test('settings load persisted values, save edits, select projects and invok
   assert.deepEqual(structuredClone(f.plugin.data.selectedProjectIds), ['p2']);
   await f.control('Personal access token').update('replacement-secret');
   assert.equal(f.plugin.data.secretName, 'replacement-secret');
-  assert.equal(f.control('Personal access token').value, 'replacement-secret');
-  await until(() => f.calls.length >= 2);
+  await until(() => f.calls.length >= 2 && f.control('Personal access token').value === 'replacement-secret');
   let imports = 0;
   f.plugin.syncNow = async () => { imports++; };
   f.control('Import now').click!();
@@ -221,21 +238,26 @@ void test('settings load persisted values, save edits, select projects and invok
 void test('project settings show empty, revoked-token and missing-Keychain states', async () => {
   const f = fixture(configured);
   await f.plugin.onload();
+  assert.equal(f.calls.length, 0, 'indexing the settings for search must not fetch projects');
+  assert.ok(f.tabs[0].settingItems.some((item) => item.name === 'Vault folder'));
   f.setProjects([]);
   f.tabs[0].display();
-  await until(() => f.tabs[0].containerEl.children[0].text === 'No active projects are available.');
+  await until(() => f.rows.includes('No active projects are available.'));
+  f.tabs[0].hide();
   f.setStatus(401);
   f.tabs[0].display();
-  await until(() => f.tabs[0].containerEl.children[0].text === 'Token revoked');
+  await until(() => f.rows.includes('Token revoked'));
+  f.tabs[0].hide();
   f.setSecret('');
   f.tabs[0].display();
-  await until(() => f.tabs[0].containerEl.children[0].text.includes('Choose a personal access token'));
-  const disconnected = fixture(configured);
-  await disconnected.plugin.onload();
-  disconnected.tabs[0].display();
-  disconnected.tabs[0].containerEl.children[0].isConnected = false;
+  await until(() => f.rows.some((row) => row.includes('Choose a personal access token')));
+  const closed = fixture(configured);
+  await closed.plugin.onload();
+  closed.tabs[0].display();
+  closed.tabs[0].hide();
   await setImmediate();
-  assert.ok(!disconnected.settings.some((setting) => setting.name === 'Research'));
+  await setImmediate();
+  assert.ok(!closed.settings.some((setting) => setting.name === 'Research'), 'a closed tab drops a late project list');
 });
 
 void test('uses Keychain and authenticated requestUrl; refuses missing secrets and unsafe origins', async () => {

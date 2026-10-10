@@ -1,10 +1,11 @@
 # Supported versions
 
-As of 2026-10-10, version 0.1.0 is published as a GitHub release for manual installation and is not yet listed in the community directory. Preparing assets does not start a retirement clock.
+As of 2026-10-10, version 0.1.1 is the current GitHub release for manual installation, and 0.1.0 stays supported until at least its earliest retirement date. Neither is listed in the community directory yet. Preparing assets does not start a retirement clock.
 
 | Version | Minimum Obsidian | Availability | Successor available | Earliest retirement | Required upgrade |
 | --- | --- | --- | --- | --- | --- |
-| 0.1.0 | 1.13.0 | GitHub release 2026-10-10; desktop acceptance on 1.13.7 | None | None announced; supported | None |
+| 0.1.1 | 1.13.0 | GitHub release 2026-10-10; settings use the declarative settings API and appear in settings search | None | None announced; supported | None |
+| 0.1.0 | 1.13.0 | GitHub release 2026-10-10; desktop acceptance on 1.13.7 and 1.14.4 | 0.1.1, 2026-10-10 | 2027-01-08 or later; supported until then | None: 0.1.1 changes only the settings tab, with the same data and API use |
 
 The manifest permits mobile installation because the bundle uses browser-safe APIs. Mobile installation, Keychain and import/update acceptance remain unverified; they must pass on the released candidate before advertising mobile support. The minimum version is an API requirement, not evidence of a test on every supported Obsidian version.
 

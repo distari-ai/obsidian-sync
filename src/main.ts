@@ -8,8 +8,9 @@ import {
   TFolder,
   requestUrl,
   type App,
+  type SettingDefinitionItem,
 } from 'obsidian';
-import { DistariApi, normalizeApiBase, type ApiTransport } from './api.ts';
+import { DistariApi, normalizeApiBase, type ApiTransport, type DistariProject } from './api.ts';
 import { VaultSync, type SyncState, type VaultPort } from './sync.ts';
 
 interface PluginData {
@@ -171,68 +172,106 @@ export default class DistariPlugin extends Plugin {
   }
 }
 
+// Declarative settings (Obsidian 1.13+) so every row appears in settings search.
+type ProjectList =
+  | { state: 'idle' | 'loading' }
+  | { state: 'loaded'; projects: DistariProject[] }
+  | { state: 'failed'; message: string };
+
 class DistariSettings extends PluginSettingTab {
+  private projectList: ProjectList = { state: 'idle' };
+
   constructor(app: App, private readonly plugin: DistariPlugin) { super(app, plugin); }
 
-  display(): void {
-    const { containerEl } = this;
-    containerEl.empty();
-    new Setting(containerEl).setName('Distari API').setDesc('Use the hosted API, or a local development server.')
-      .addText((field) => field.setValue(this.plugin.data.apiUrl).onChange(async (value) => {
-        this.plugin.data.apiUrl = value.trim();
-        await this.plugin.save();
-      }));
-    new Setting(containerEl).setName('Personal access token')
-      .setDesc('Create a read-only token in Distari Account settings, then link it through Obsidian Keychain.')
-      .addComponent((el) => new SecretComponent(this.app, el)
-        .setValue(this.plugin.data.secretName)
-        .onChange(async (name) => {
-          this.plugin.data.secretName = name;
+  getSettingDefinitions(): SettingDefinitionItem[] {
+    return [
+      { name: 'Distari API', desc: 'Use the hosted API, or a local development server.', render: (setting) => {
+        setting.addText((field) => field.setValue(this.plugin.data.apiUrl).onChange(async (value) => {
+          this.plugin.data.apiUrl = value.trim();
           await this.plugin.save();
-          this.display();
         }));
-    new Setting(containerEl).setName('Vault folder')
-      .setDesc('Projects are saved in separate folders beneath this folder.')
-      .addText((field) => field.setValue(this.plugin.data.rootFolder).onChange(async (value) => {
-        this.plugin.data.rootFolder = value;
-        await this.plugin.save();
-      }));
-    new Setting(containerEl).setName('Automatic import').setDesc('Refresh selected projects while Obsidian is open.')
-      .addDropdown((dropdown) => dropdown
-        .addOption('0', 'Off').addOption('15', 'Every 15 minutes')
-        .addOption('30', 'Every 30 minutes').addOption('60', 'Every hour')
-        .setValue(String(this.plugin.data.intervalMinutes))
-        .onChange(async (value) => {
-          this.plugin.data.intervalMinutes = Number(value);
+      } },
+      { name: 'Personal access token',
+        desc: 'Create a read-only token in Distari Account settings, then link it through Obsidian Keychain.',
+        render: (setting) => {
+          setting.addComponent((el) => new SecretComponent(this.app, el)
+            .setValue(this.plugin.data.secretName)
+            .onChange(async (name) => {
+              this.plugin.data.secretName = name;
+              await this.plugin.save();
+              this.reloadProjects();
+            }));
+        } },
+      { name: 'Vault folder', desc: 'Projects are saved in separate folders beneath this folder.', render: (setting) => {
+        setting.addText((field) => field.setValue(this.plugin.data.rootFolder).onChange(async (value) => {
+          this.plugin.data.rootFolder = value;
           await this.plugin.save();
-          this.plugin.resetTimer();
         }));
-    new Setting(containerEl).setName('Projects').setDesc('Only selected projects are imported.')
-      .addButton((button) => button.setButtonText('Refresh list').onClick(() => this.display()));
-    const list = containerEl.createDiv();
-    void this.showProjects(list);
-    new Setting(containerEl).setName('Import now')
-      .addButton((button) => button.setButtonText('Import from Distari')
-        .setCta().onClick(() => void this.plugin.syncNow()));
+      } },
+      { name: 'Automatic import', desc: 'Refresh selected projects while Obsidian is open.', render: (setting) => {
+        setting.addDropdown((dropdown) => dropdown
+          .addOption('0', 'Off').addOption('15', 'Every 15 minutes')
+          .addOption('30', 'Every 30 minutes').addOption('60', 'Every hour')
+          .setValue(String(this.plugin.data.intervalMinutes))
+          .onChange(async (value) => {
+            this.plugin.data.intervalMinutes = Number(value);
+            await this.plugin.save();
+            this.plugin.resetTimer();
+          }));
+      } },
+      { name: 'Projects', desc: 'Only selected projects are imported.', render: (setting) => {
+        setting.addButton((button) => button.setButtonText('Refresh list').onClick(() => this.reloadProjects()));
+        // Rendering means the tab is open; the search index never fetches.
+        if (this.projectList.state === 'idle') void this.loadProjects();
+      } },
+      ...this.projectRows(),
+      { name: 'Import now', render: (setting) => {
+        setting.addButton((button) => button.setButtonText('Import from Distari')
+          .setCta().onClick(() => void this.plugin.syncNow()));
+      } },
+    ];
   }
 
-  private async showProjects(container: HTMLElement): Promise<void> {
+  hide(): void {
+    // Reopening the tab fetches a fresh project list, as display() used to.
+    this.projectList = { state: 'idle' };
+    super.hide();
+  }
+
+  private projectRows(): SettingDefinitionItem[] {
+    const list = this.projectList;
+    if (list.state === 'failed') return [{ name: list.message, searchable: false }];
+    if (list.state !== 'loaded') return [];
+    if (!list.projects.length) return [{ name: 'No active projects are available.', searchable: false }];
+    return list.projects.map((project) => ({ name: project.name, render: (setting: Setting) => {
+      setting.addToggle((toggle) => toggle
+        .setValue(this.plugin.data.selectedProjectIds.includes(project.id))
+        .onChange(async (enabled) => {
+          const selected = new Set(this.plugin.data.selectedProjectIds);
+          if (enabled) selected.add(project.id); else selected.delete(project.id);
+          this.plugin.data.selectedProjectIds = [...selected];
+          await this.plugin.save();
+        }));
+    } }));
+  }
+
+  private reloadProjects(): void {
+    this.projectList = { state: 'idle' };
+    void this.loadProjects();
+  }
+
+  private async loadProjects(): Promise<void> {
+    const request: ProjectList = { state: 'loading' };
+    this.projectList = request;
+    let next: ProjectList;
     try {
-      const projects = await this.plugin.api().projects();
-      if (!container.isConnected) return;
-      for (const project of projects) {
-        new Setting(container).setName(project.name).addToggle((toggle) => toggle
-          .setValue(this.plugin.data.selectedProjectIds.includes(project.id))
-          .onChange(async (enabled) => {
-            const selected = new Set(this.plugin.data.selectedProjectIds);
-            if (enabled) selected.add(project.id); else selected.delete(project.id);
-            this.plugin.data.selectedProjectIds = [...selected];
-            await this.plugin.save();
-          }));
-      }
-      if (!projects.length) container.setText('No active projects are available.');
+      next = { state: 'loaded', projects: await this.plugin.api().projects() };
     } catch (error) {
-      if (container.isConnected) container.setText(error instanceof Error ? error.message : String(error));
+      next = { state: 'failed', message: error instanceof Error ? error.message : String(error) };
     }
+    // A newer reload or a closed tab supersedes this result.
+    if (this.projectList !== request) return;
+    this.projectList = next;
+    this.update();
   }
 }
