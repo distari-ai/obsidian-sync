@@ -97,7 +97,7 @@ export class VaultSync {
     ));
     for (const original of notes) {
       const note = { ...original };
-      const ids = [...new Set([...note.body_md.matchAll(/puskola:\/\/note-asset\/([0-9a-f-]{36})/g)].map((match) => match[1]))];
+      const ids = [...new Set([...note.body_md.matchAll(/distari:\/\/note-asset\/([0-9a-f-]{36})/g)].map((match) => match[1]))];
       for (const id of ids) {
         const asset = await api.noteAsset(id);
         await this.vault.ensureFolder(`${folder}/Assets`);
@@ -111,7 +111,7 @@ export class VaultSync {
           if (existing && bytesToHex(sha256(new Uint8Array(existing))) !== hash) throw new Error('A note image path was changed locally. Preserve it and retry sync.');
         }
         if (!existing) await this.vault.createBinary(`${folder}/Assets/${name}`, asset.bytes);
-        note.body_md = note.body_md.replaceAll(`puskola://note-asset/${id}`, `../Assets/${name}`);
+        note.body_md = note.body_md.replaceAll(`distari://note-asset/${id}`, `../Assets/${name}`);
       }
       items.push(renderNote(note, notePaths.get(note.id)!, paperPaths, notePaths, this.siteUrl));
     }

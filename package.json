@@ -1,11 +1,13 @@
 {
   "name": "distari-obsidian",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "description": "Pull Distari papers and notes into an Obsidian vault",
   "license": "MIT",
-  "engines": { "node": ">=22.18.0" },
+  "engines": {
+    "node": ">=22.18.0"
+  },
   "scripts": {
     "build": "tsc --noEmit && node esbuild.config.mjs",
     "test": "node --experimental-strip-types --test src/*.test.ts",
@@ -18,7 +20,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.15.17",
-    "esbuild": "^0.25.5",
+    "esbuild": "^0.28.2",
     "obsidian": "^1.13.1",
     "typescript": "^5.8.3"
   }

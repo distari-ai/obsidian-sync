@@ -108,6 +108,9 @@ export function renderNote(
   const body = note.body_md.replace(/\[\[(paper|note):([^|\]]+)(?:\|([^\]]+))?\]\]/g, (_whole, kind: string, id: string, label?: string) => {
     const target = kind === 'paper' ? paperPaths.get(Number(id)) : notePaths.get(id);
     return target ? wikilink(target, label) : (label || id);
+  }).replace(/(?<!!)\[([^\]]+)\]\(distari:\/\/(paper|note)\/([^\s)]+)\)/gi, (_whole, label: string, kind: string, id: string) => {
+    const target = kind.toLowerCase() === 'paper' ? paperPaths.get(Number(id)) : notePaths.get(id);
+    return target ? wikilink(target, label) : `[${label}](distari://${kind.toLowerCase()}/${id})`;
   }).trim();
   const paperLinks = [...linkedPapers].map((id) => paperPaths.get(id)).filter((item): item is string => Boolean(item));
   return {

@@ -576,6 +576,9 @@ function renderNote(note, path, paperPaths, notePaths, siteUrl) {
   const body = note.body_md.replace(/\[\[(paper|note):([^|\]]+)(?:\|([^\]]+))?\]\]/g, (_whole, kind, id, label) => {
     const target = kind === "paper" ? paperPaths.get(Number(id)) : notePaths.get(id);
     return target ? wikilink(target, label) : label || id;
+  }).replace(/(?<!!)\[([^\]]+)\]\(distari:\/\/(paper|note)\/([^\s)]+)\)/gi, (_whole, label, kind, id) => {
+    const target = kind.toLowerCase() === "paper" ? paperPaths.get(Number(id)) : notePaths.get(id);
+    return target ? wikilink(target, label) : `[${label}](distari://${kind.toLowerCase()}/${id})`;
   }).trim();
   const paperLinks = [...linkedPapers].map((id) => paperPaths.get(id)).filter((item) => Boolean(item));
   return {
@@ -648,7 +651,7 @@ var VaultSync = class {
     ));
     for (const original of notes) {
       const note = { ...original };
-      const ids = [...new Set([...note.body_md.matchAll(/puskola:\/\/note-asset\/([0-9a-f-]{36})/g)].map((match) => match[1]))];
+      const ids = [...new Set([...note.body_md.matchAll(/distari:\/\/note-asset\/([0-9a-f-]{36})/g)].map((match) => match[1]))];
       for (const id of ids) {
         const asset = await api.noteAsset(id);
         await this.vault.ensureFolder(`${folder}/Assets`);
@@ -661,7 +664,7 @@ var VaultSync = class {
           if (existing && bytesToHex(sha256(new Uint8Array(existing))) !== hash) throw new Error("A note image path was changed locally. Preserve it and retry sync.");
         }
         if (!existing) await this.vault.createBinary(`${folder}/Assets/${name}`, asset.bytes);
-        note.body_md = note.body_md.replaceAll(`puskola://note-asset/${id}`, `../Assets/${name}`);
+        note.body_md = note.body_md.replaceAll(`distari://note-asset/${id}`, `../Assets/${name}`);
       }
       items.push(renderNote(note, notePaths.get(note.id), paperPaths, notePaths, this.siteUrl));
     }
@@ -752,6 +755,7 @@ var ObsidianVault = class {
   constructor(app) {
     this.app = app;
   }
+  app;
   async readBinary(path) {
     const file = this.app.vault.getAbstractFileByPath(path);
     if (!file) return null;
@@ -875,6 +879,7 @@ var DistariSettings = class extends import_obsidian.PluginSettingTab {
     super(app, plugin);
     this.plugin = plugin;
   }
+  plugin;
   projectList = { state: "idle" };
   getSettingDefinitions() {
     return [

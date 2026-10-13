@@ -8,7 +8,7 @@ Oshan owns release approval, publication and directory submission; Sumedhe Dissa
 
 The MIT license covers this plugin subtree and the exported plugin only. It does not license the rest of Distari. Oshan approved the license and the public source export on 2026-10-10, with Sumedhe informed; a change of license needs both owners. `THIRD_PARTY_LICENSES.md` carries the bundled SHA-256 dependency's license. Do not add a self-updater; Obsidian manages updates.
 
-As of 2026-10-10, `distari-ai/obsidian-sync` has published 0.1.0 and its successor 0.1.1. A push to the monorepo does not publish this plugin. There is deliberately no automatic publishing workflow.
+As of 2026-10-14, `distari-ai/obsidian-sync` has published 0.1.0, 0.1.1 and 0.2.0. A push to the monorepo does not publish this plugin. There is deliberately no automatic publishing workflow.
 
 The monorepo's `make release` and `make deploy` commands manage Distari service releases with `vMAJOR.MINOR.PATCH` tags. They do not publish Obsidian assets or change the plugin version. Publish this plugin separately in its distribution repository, using the exact manifest version without the `v` prefix.
 
@@ -54,7 +54,7 @@ Sign into the Community directory, link a maintainer's GitHub identity, select t
 
 ## Installation and update acceptance gates
 
-Record evidence for the exact published version in the monorepo's `docs/engineering/integration-smoke/`, then update OBS-SYNC and roadmap. The first-party note-route decision is complete; retain its read scope, member isolation, live offset pagination and supported-version windows. Check supported plugin versions against the proposed API before a backend breaking change.
+Record acceptance for the exact published version on the source issue, with sanitized artifacts kept outside tracked documentation under the monorepo's `docs/engineering/run-evidence.md` rules, then update OBS-SYNC and roadmap. The first-party note-route decision is complete; retain its read scope, member isolation, live offset pagination and supported-version windows. Check supported plugin versions against the proposed API before a backend breaking change.
 
 1. In a fresh disposable desktop vault, install **downloaded public release assets**, using the README's manual steps, and compare their bytes with the release checksums. Enable the plugin and connect a synthetic read-only token to an isolated API. Record Obsidian, plugin and source versions. Do not reuse a preinstalled development bundle.
 2. Run the native import, unchanged repeat, changed-summary, locally edited file/conflict-repeat and revoked-token journey. Verify another member's notes are absent. This must preserve local edits, make one conflict per source version and leave files/checkpoints unchanged after refusal.
@@ -72,10 +72,14 @@ Distari sync X.Y.Z
 Source: reviewed distari-ai/project commit <hash>
 Available: YYYY-MM-DD; minimum Obsidian: X.Y.Z
 Changes: <user-visible changes and any required upgrade>
-Supported predecessors: <versions and actual retirement dates, at least 90 days after successor availability>
+Supported predecessors: <none before launch under the pre-release policy; after launch, versions and retirement dates at least 90 days after successor availability>
 Validation: <public-asset/native evidence; directory install/update evidence or explicitly pending>
 Known constraints: first-party note reads, live offset pagination, desktop/mobile acceptance state
 Assets: <SHA-256 for main.js and manifest.json>
 ```
 
 Keep the release notes, `VERSIONS.md`, manifest and directory listing consistent. If maintenance ends, transfer or remove the listing rather than leaving an unsupported plugin advertised.
+
+## 0.2.0 (#812)
+
+0.2.0 switches internal note paper/note/image parsing to `distari://` and removes the outbound scheme rewrite. It deliberately does not parse the retired scheme, so 0.1.x clients may lose note images and links against the current service; the pre-release policy permits that break. It was published on 2026-10-14, the day after the server switched schemes; acceptance is recorded on the issue.

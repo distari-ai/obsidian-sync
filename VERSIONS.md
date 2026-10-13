@@ -1,14 +1,15 @@
 # Supported versions
 
-As of 2026-10-10, version 0.1.1 is the current release, listed in the Community directory and on GitHub, and 0.1.0 stays supported until at least its earliest retirement date. Preparing assets does not start a retirement clock.
+As of 2026-10-14, 0.2.0 is the current release, for the `distari://` note scheme the service switched to on 2026-10-13 (#812). 0.1.x clients may fail to import note images and links against that service.
 
-| Version | Minimum Obsidian | Availability | Successor available | Earliest retirement | Required upgrade |
-| --- | --- | --- | --- | --- | --- |
-| 0.1.1 | 1.13.0 | GitHub release and Community directory 2026-10-10; settings use the declarative settings API and appear in settings search | None | None announced; supported | None |
-| 0.1.0 | 1.13.0 | GitHub release 2026-10-10; desktop acceptance on 1.13.7 and 1.14.4 | 0.1.1, 2026-10-10 | 2027-01-08 or later; supported until then | None: 0.1.1 changes only the settings tab, with the same data and API use |
+| Version | Minimum Obsidian | Availability | Required upgrade |
+| --- | --- | --- | --- |
+| 0.2.0 | 1.13.0 | GitHub release 2026-10-14 | Parses only `distari://` paper/note links and images; no retired-scheme fallback |
+| 0.1.1 | 1.13.0 | GitHub release and Community directory 2026-10-10 | Upgrade to 0.2.0 for the new server scheme; old image parsing may break |
+| 0.1.0 | 1.13.0 | GitHub release 2026-10-10; desktop acceptance on 1.13.7 and 1.14.4 | Upgrade to 0.2.0 for the new server scheme; old image parsing may break |
+
+The 2026-10-13 pre-release policy supersedes the earlier 90-day promise for these disposable test versions. The previously announced 0.1.0 retirement floor of 2027-01-08 is withdrawn for this scheme change. No rewrite, dual parsing or compatibility bridge is provided. Preserve historical entries in `versions.json`.
 
 The manifest permits mobile installation because the bundle uses browser-safe APIs. Mobile installation, Keychain and import/update acceptance remain unverified; they must pass on the released candidate before advertising mobile support. The minimum version is an API requirement, not evidence of a test on every supported Obsidian version.
 
-Each official version stays supported while current and for at least 90 calendar days after its successor is available to users. Record the actual availability date, predecessor's earliest retirement date and required upgrade here and in release notes before announcing a successor. Keep every overlapping support window and all historical entries in `versions.json`. A successor's draft or preparation date does not count as availability. The manual 0.1.0 build receives the same predecessor window once a successor is published.
-
-Backend note-route changes must keep working with every supported plugin version until its announced retirement date. An urgent security fix may shorten a window only with a published reason and required upgrade. Privacy and authorization checks always apply.
+After public launch, each official version stays supported while current and for at least 90 calendar days after its successor is available. Record actual availability and retirement dates before announcing a successor; preparation does not start a retirement clock. Backend changes then preserve supported versions unless an urgent security fix documents a required upgrade. Privacy and authorization checks always apply.

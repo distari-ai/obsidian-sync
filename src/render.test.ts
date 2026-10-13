@@ -153,3 +153,22 @@ void test('safe file names strip vault-reserved characters and truncate at Unico
   assert.equal(safeName('...'), 'Untitled');
   assert.equal(safeName('😀'.repeat(101)), '😀'.repeat(100));
 });
+
+void test('resolves Markdown scheme links to vault paths and preserves unresolved references', () => {
+  const body = '[Study](distari://paper/7) [Next](distari://note/n2) [Missing](distari://note/gone)\n[ref]: <distari://paper/99>\n< distari://note/gone > https://example.org';
+  const source = { ...note, body_md: body };
+  const result = renderNote(source, 'Research/Notes/Reading.md', new Map([[7, path]]), new Map([['n2', 'Research/Notes/Next.md']]), site);
+  assert.match(result.content, /\[\[Research\/Papers\/Study\|Study\]\]/);
+  assert.match(result.content, /\[\[Research\/Notes\/Next\|Next\]\]/);
+  assert.match(result.content, /\[Missing\]\(distari:\/\/note\/gone\)/);
+  assert.match(result.content, /\[ref\]: <distari:\/\/paper\/99>/);
+  assert.match(result.content, /https:\/\/example.org/);
+  assert.equal(source.body_md, body);
+});
+
+void test('does not resolve or rewrite retired scheme links', () => {
+  const retired = 'puskola' + '://';
+  const body = `[Paper](${retired}paper/7) [Note](${retired}note/n2)`;
+  const result = renderNote({ ...note, body_md: body }, 'Research/Notes/Reading.md', new Map([[7, path]]), new Map([['n2', 'Research/Notes/Next.md']]), site);
+  assert.ok(result.content.includes(body));
+});
