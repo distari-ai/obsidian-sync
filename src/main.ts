@@ -82,7 +82,9 @@ const transport: ApiTransport = async (url, token) => {
   const response = await requestUrl({
     url,
     method: 'GET',
-    headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', 'Accept-Encoding': 'gzip' },
+    // Let the host negotiate compression: Android requestUrl returns raw gzip
+    // bytes when Accept-Encoding is explicitly set by the plugin.
+    headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
     throw: false,
   });
   return { status: response.status, body: response.text, bytes: response.arrayBuffer, headers: response.headers };

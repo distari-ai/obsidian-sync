@@ -4,7 +4,7 @@ This Obsidian plugin imports selected Distari projects as Markdown. Each paper g
 
 ## Availability and requirements
 
-As of 2026-10-14, version 0.2.0 is the current release. Install it from Obsidian's community plugins ([directory listing](https://community.obsidian.md/plugins/distari-sync)), or manually from the GitHub releases in [`distari-ai/obsidian-sync`](https://github.com/distari-ai/obsidian-sync). Native desktop checks passed on Obsidian 1.13.7 and 1.14.4. The minimum app version is 1.13.0; mobile acceptance is still unverified.
+As of 2026-11-04, version 0.2.1 is prepared to fix Android response compression; publication and mobile acceptance are pending. Version 0.2.0 is the current published release. Install it from Obsidian's community plugins ([directory listing](https://community.obsidian.md/plugins/distari-sync)), or manually from the GitHub releases in [`distari-ai/obsidian-sync`](https://github.com/distari-ai/obsidian-sync). Native desktop checks passed on Obsidian 1.13.7 and 1.14.4, and the directory's update from 0.1.1 to 0.2.0 passed on 1.14.5. The minimum app version is 1.13.0. Android 16 (API 36 ARM64 emulator) with Obsidian 1.15.0 passed Browse installation and Keychain/settings persistence on 2026-11-04, but 0.2.0 fails before import against dev: its explicit gzip request returns compressed project-list bytes that the Android transport does not decode before JSON parsing ([#721](https://github.com/distari-ai/project/issues/721)). Mobile import remains unverified; iOS and mobile plugin upgrades are untested.
 
 You need a Distari account, access to the projects you select, and an active personal token with `read` scope. The plugin is free. Distari offers paid plans and credits for its service; this plugin only reads existing papers, summaries and notes, so importing them does not spend credits. See [Distari pricing](https://distari.com/pricing/).
 
@@ -26,7 +26,7 @@ If an update fails, close Obsidian and restore the saved old assets. If the new 
 
 ## Connect and import
 
-1. In Distari, open **Account settings > Personal access tokens** and create a token with the `read` scope. Keep the token private.
+1. In the Distari web app, open the avatar menu, then **Settings > Access tokens > New token**, and create a token with only **Read** (`read`) selected. Keep the token private.
 2. In Obsidian, open **Settings > Keychain** and add that token, or use **Link…** beside **Personal access token** in **Settings > Community plugins > Distari sync**. The plugin saves the secret's name, never its value, in its own settings.
 3. Select the Distari projects to import and choose a folder inside the vault. The default is `Distari`.
 4. Choose **Import from Distari** from Obsidian's command menu, ribbon, or a file's context menu. You can also use **Import now** in the plugin settings. Automatic import runs every 30 minutes while Obsidian is open by default.

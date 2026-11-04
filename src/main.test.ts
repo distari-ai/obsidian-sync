@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { setImmediate } from 'node:timers/promises';
 import { runInNewContext } from 'node:vm';
+import { gzipSync } from 'node:zlib';
 import { fileURLToPath } from 'node:url';
 import esbuild from 'esbuild';
 import type DistariPlugin from './main.ts';
@@ -38,7 +39,7 @@ class Control {
   async update(value: string | boolean) { assert.ok(this.change); await this.change(value as never); }
 }
 
-function fixture(stored: object | null = null) {
+function fixture(stored: object | null = null, androidExplicitGzip = false) {
   const notices: string[] = [];
   const commands: Array<{ id: string; name: string; callback: Callback }> = [];
   const ribbons: Array<{ icon: string; title: string; callback: Callback }> = [];
@@ -127,6 +128,13 @@ function fixture(stored: object | null = null) {
       else if (url.pathname === '/api/v1/papers/7/summary') body = { overview: 'An overview.' };
       else if (url.pathname === '/api/v1/projects/p1/notes') body = [];
       else throw new Error(`Unexpected request: ${request.url}`);
+      // Android requestUrl leaves explicitly requested gzip compressed, unlike
+      // the host-managed negotiation used when Accept-Encoding is omitted.
+      if (androidExplicitGzip && request.headers['Accept-Encoding'] === 'gzip') {
+        const bytes = gzipSync(JSON.stringify(body));
+        return { status, text: bytes.toString('utf8'), headers: { 'content-encoding': 'gzip' },
+          arrayBuffer: bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) };
+      }
       return { status, text: JSON.stringify(body), headers: {}, arrayBuffer: new ArrayBuffer(0) };
     },
   };
@@ -266,7 +274,7 @@ void test('uses Keychain and authenticated requestUrl; refuses missing secrets a
   await f.plugin.api().projects();
   assert.deepEqual(f.calls.map((call) => ({ ...call, headers: { ...call.headers } })), [{
     url: 'https://api.distari.com/api/v1/projects', method: 'GET', throw: false,
-    headers: { Authorization: 'Bearer synthetic-token', Accept: 'application/json', 'Accept-Encoding': 'gzip' },
+    headers: { Authorization: 'Bearer synthetic-token', Accept: 'application/json' },
   }]);
   f.plugin.data.apiUrl = 'http://untrusted.example';
   assert.throws(() => f.plugin.api(), /HTTPS API origin/);
@@ -321,4 +329,20 @@ void test('import prevents overlap, resets after failure and runs the real vault
   await f.plugin.syncNow(true);
   assert.equal(f.notices.length, notices);
   assert.equal(f.contents.size, 1);
+});
+
+void test('Android project selection and import work with host-managed compression', async () => {
+  const f = fixture(configured, true);
+  await f.plugin.onload();
+  f.tabs[0].display();
+  await until(() => f.settings.some((setting) => setting.name === 'Research'));
+  await f.plugin.syncNow();
+  assert.match(f.notices.at(-1)!, /1 new, 0 updated, 0 conflicts/);
+  assert.match([...f.contents.values()][0], /## Overview\n\nAn overview\./);
+  const contents = [...f.contents.entries()];
+  const checkpoints = structuredClone(f.plugin.data.sync);
+  await f.plugin.syncNow();
+  assert.match(f.notices.at(-1)!, /0 new, 0 updated, 0 conflicts/);
+  assert.deepEqual([...f.contents.entries()], contents);
+  assert.deepEqual(structuredClone(f.plugin.data.sync), checkpoints);
 });
