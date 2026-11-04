@@ -83,3 +83,7 @@ Keep the release notes, `VERSIONS.md`, manifest and directory listing consistent
 ## 0.2.0 (#812)
 
 0.2.0 switches internal note paper/note/image parsing to `distari://` and removes the outbound scheme rewrite. It deliberately does not parse the retired scheme, so 0.1.x clients may lose note images and links against the current service; the pre-release policy permits that break. It was published on 2026-10-14, the day after the server switched schemes; acceptance is recorded on the issue.
+
+## 0.2.1 and 0.2.2 (#721)
+
+Published on 2026-11-04: 0.2.1 leaves compression negotiation to Obsidian so Android receives decoded JSON; 0.2.2 adds readable aliases to generated bracket-ended paper links so Obsidian resolves the complete ID. No paths, plugin ID, API contract or saved settings/checkpoint format changed. The version ledger records the predecessors' minimum 2027-02-02 support floor. Released 0.2.2 passed Android Browse installation, Keychain/import/link/repeat/restart acceptance against dev, plus Obsidian's native update from 0.2.1. iOS remains untested. Preserve the earlier failed-run evidence and all published assets; [#721](https://github.com/distari-ai/project/issues/721) owns dated acceptance and cleanup receipts.
