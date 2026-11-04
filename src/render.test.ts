@@ -3,6 +3,8 @@ import test from 'node:test';
 import type { DistariNote, DistariPaper } from './api.ts';
 import { renderNote, renderPaper, safeName } from './render.ts';
 
+
+
 const paper: DistariPaper = {
   id: 7, project_id: 'research', title: 'A "quoted": study',
   authors: [{ full_name: 'Ada Lovelace' }, { full_name: '李' }, { full_name: '' }],
@@ -171,4 +173,12 @@ void test('does not resolve or rewrite retired scheme links', () => {
   const body = `[Paper](${retired}paper/7) [Note](${retired}note/n2)`;
   const result = renderNote({ ...note, body_md: body }, 'Research/Notes/Reading.md', new Map([[7, path]]), new Map([['n2', 'Research/Notes/Next.md']]), site);
   assert.ok(result.content.includes(body));
+});
+
+void test('generated paper links keep closing ID brackets inside an explicit alias', () => {
+  const target = 'Research [project]/Papers/Study [7].md';
+  const result = renderNote({ ...note, body_md: '', file_id: 7 },
+    'Research [project]/Notes/Reading [note].md', new Map([[7, target]]), new Map(), site);
+  assert.ok(result.content.includes('- [[Research [project]/Papers/Study [7]|Study]]'));
+  assert.ok(!result.content.includes(']]]'), 'a bare bracket-ended target is truncated by Obsidian');
 });

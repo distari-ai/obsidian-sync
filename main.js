@@ -502,7 +502,8 @@ function newer(a, b) {
 }
 function wikilink(path, label) {
   const target = path.replace(/\.md$/, "");
-  const cleanLabel = (label ?? "").replace(/[\]|]/g, "").trim();
+  const fallback = target.endsWith("]") ? target.slice(target.lastIndexOf("/") + 1).replace(/ \[[^\]]+\]$/, "") : "";
+  const cleanLabel = (label ?? fallback).replace(/[\]|]/g, "").trim();
   return `[[${target}${cleanLabel ? `|${cleanLabel}` : ""}]]`;
 }
 function section(title, content) {

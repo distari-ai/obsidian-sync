@@ -26,7 +26,10 @@ function newer(a: string, b?: string | null): string {
 
 function wikilink(path: string, label?: string): string {
   const target = path.replace(/\.md$/, '');
-  const cleanLabel = (label ?? '').replace(/[\]|]/g, '').trim();
+  // A bare target ending in [id] creates ]]], which Obsidian parses with the
+  // ID's closing bracket outside the link. An alias keeps the full path intact.
+  const fallback = target.endsWith(']') ? target.slice(target.lastIndexOf('/') + 1).replace(/ \[[^\]]+\]$/, '') : '';
+  const cleanLabel = (label ?? fallback).replace(/[\]|]/g, '').trim();
   return `[[${target}${cleanLabel ? `|${cleanLabel}` : ''}]]`;
 }
 
